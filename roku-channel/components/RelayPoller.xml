@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  RelayPoller: background task that GETs <relayUrl>/now-playing on a
+  fixed interval and publishes the parsed JSON on `nowPlaying`.
+
+  Network I/O must not run on the render thread, hence a Task node.
+-->
+<component name="RelayPoller" extends="Task">
+  <script type="text/brightscript" uri="pkg:/components/RelayPoller.brs" />
+
+  <interface>
+    <field id="relayUrl" type="string" />
+    <field id="pollInterval" type="int" value="10" />
+    <!-- outputs -->
+    <field id="nowPlaying" type="assocarray" />
+    <field id="reachable" type="boolean" value="false" />
+  </interface>
+</component>

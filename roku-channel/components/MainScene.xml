@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  MainScene: fullscreen black background with a centered status label.
+  MainScene: fullscreen black background.
 
-  The label currently shows a placeholder string. Once the relay is up,
-  MainScene.brs will poll it and swap this label for a fullscreen Poster
-  node showing the current record's album art.
+  - Poster "art" shows the current record's album art, square and
+    centered (1080x1080 on the 1920-wide screen).
+  - Label "statusLabel" is shown instead when there's no art yet
+    (waiting for music, relay unreachable, image failed to load).
+
+  A RelayPoller task polls the relay; onNowPlaying / onArtLoadStatus in
+  MainScene.brs drive which of the two is visible.
 -->
 <component name="MainScene" extends="Scene">
   <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
@@ -15,6 +19,14 @@
       width="1920"
       height="1080"
       color="0x000000FF" />
+
+    <Poster
+      id="art"
+      width="1080"
+      height="1080"
+      translation="[420, 0]"
+      loadDisplayMode="scaleToFit"
+      visible="false" />
 
     <Label
       id="statusLabel"

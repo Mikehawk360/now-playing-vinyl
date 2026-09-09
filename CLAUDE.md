@@ -43,14 +43,20 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
       fallback) → dedupe → POST relay; clears after N misses. --once /
       --dry-run flags. test_listener.py: 9 cases, passing. End-to-end
       extract→POST→relay GET verified locally.)
+- [x] MainScene polls the relay and shows album art (components/
+      RelayPoller.xml/.brs Task GETs /now-playing every
+      poll_interval_seconds; MainScene.brs shows a centered 1080²
+      Poster of artUrl, or a status Label when idle/unreachable/load
+      fails). manifest bumped to 0.2; relay_url + poll_interval_seconds
+      are manifest keys read via roAppInfo. Not yet run on hardware.
+- [ ] Sideload v0.2 and verify against a live relay on the Roku
 - [ ] Deploy relay + listener on the tablet via Termux (leave running)
-- [ ] Update MainScene.brs to poll the relay and display real album art
-      instead of the placeholder text
 
 ## Key decisions made so far
-- BrightScript label placeholder currently reads "Hello World - it's
-  alive!" — this is what gets replaced with a Poster component showing
-  album art.
+- The Roku channel is code-complete: RelayPoller Task polls the relay,
+  MainScene swaps between the album-art Poster and a status Label. All
+  three code pieces (channel, relay, listener) are built and unit-tested;
+  what's left is device deployment + hardware testing.
 - AudD chosen over alternatives for recognition (300 free requests,
   ~$5/1000 after).
 - Windows dev environment: Git Bash + VS Code, `code --wait` set as
@@ -63,9 +69,12 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
   POST {} or {"clear": true} clears. Roku GETs {} when nothing is set.
 
 ## Next step when resuming
-1. Update MainScene.brs to poll GET /now-playing and show a fullscreen
-   Poster of artUrl instead of the placeholder label (last code piece).
-2. Sideload roku-channel/ (`roku-channel/package.ps1`, upload the zip via
-   the web installer) to confirm the repo copy runs on the Roku.
-3. On the tablet: install Termux + Termux:API, copy .env.example to .env
-   with the AudD token, run relay.py and listener.py (see each README).
+All code is written and unit-tested. Remaining work is deployment:
+1. Set relay_url in roku-channel/manifest to the tablet's LAN IP,
+   run roku-channel/package.ps1, sideload the zip, confirm it shows
+   "Waiting for music..." then real art once the relay has a record.
+2. On the tablet: install Termux + Termux:API (+ the F-Droid Termux:API
+   app, mic permission granted), copy tablet-listener/.env.example to
+   .env with the AudD token, run relay.py and listener.py (see each
+   README). Keep the tablet plugged in.
+3. Play a record and confirm art appears on the TV within a poll cycle.
