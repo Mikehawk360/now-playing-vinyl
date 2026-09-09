@@ -30,9 +30,11 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
 - [x] "Hello World" BrightScript channel built and sideloaded successfully
       (proves the full package → upload → run pipeline works)
 - [x] Repo structure created (roku-channel/, relay/, tablet-listener/)
-- [ ] Move the working Hello World files into roku-channel/
-      (manifest, source/main.brs, components/MainScene.xml,
-      components/MainScene.brs)
+- [x] Roku channel files in roku-channel/ (manifest, source/main.brs,
+      components/MainScene.xml, components/MainScene.brs) — recreated in
+      the repo rather than moved; the original sideloaded Hello World
+      files were never checked in. package.ps1 builds the sideload zip.
+- [ ] Re-sideload from roku-channel/ to confirm the repo copy runs
 - [ ] Build the relay endpoint
 - [ ] Build the tablet listener (AudD integration)
 - [ ] Update MainScene.brs to poll the relay and display real album art
@@ -48,5 +50,6 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
   Git's default editor.
 
 ## Next step when resuming
-Finish placing the Roku channel files into roku-channel/, commit, then
-start on the relay endpoint.
+Sideload roku-channel/ (run `roku-channel/package.ps1`, upload the zip
+via the web installer) to confirm the repo copy runs on the Roku, then
+build the relay endpoint.

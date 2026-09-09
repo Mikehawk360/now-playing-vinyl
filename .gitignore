@@ -1,0 +1,9 @@
+# Built Roku sideload package
+roku-channel/now-playing-vinyl.zip
+
+# Node (relay / tablet-listener, once they exist)
+node_modules/
+*.log
+
+# Env / secrets (AudD API token, etc.)
+.env

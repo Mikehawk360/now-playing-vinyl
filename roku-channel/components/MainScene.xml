@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  MainScene: fullscreen black background with a centered status label.
+
+  The label currently shows a placeholder string. Once the relay is up,
+  MainScene.brs will poll it and swap this label for a fullscreen Poster
+  node showing the current record's album art.
+-->
+<component name="MainScene" extends="Scene">
+  <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
+
+  <children>
+    <Rectangle
+      id="background"
+      width="1920"
+      height="1080"
+      color="0x000000FF" />
+
+    <Label
+      id="statusLabel"
+      text="Hello World - it's alive!"
+      width="1920"
+      height="1080"
+      horizAlign="center"
+      vertAlign="center"
+      color="0xFFFFFFFF" />
+  </children>
+</component>
