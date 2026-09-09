@@ -38,8 +38,12 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
 - [x] Build the relay endpoint (relay/relay.py — stdlib-only Python,
       GET/POST /now-playing + /health, optional bearer token, JSON
       mirror file. relay/test_relay.py: 7 unittest cases, passing.)
-- [ ] Deploy the relay on the tablet via Termux (leave it running)
-- [ ] Build the tablet listener (AudD integration)
+- [x] Build the tablet listener (tablet-listener/listener.py — stdlib
+      Python: record clip → AudD → extract art (Apple/Spotify/Deezer
+      fallback) → dedupe → POST relay; clears after N misses. --once /
+      --dry-run flags. test_listener.py: 9 cases, passing. End-to-end
+      extract→POST→relay GET verified locally.)
+- [ ] Deploy relay + listener on the tablet via Termux (leave running)
 - [ ] Update MainScene.brs to poll the relay and display real album art
       instead of the placeholder text
 
@@ -59,9 +63,9 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
   POST {} or {"clear": true} clears. Roku GETs {} when nothing is set.
 
 ## Next step when resuming
-1. Sideload roku-channel/ (`roku-channel/package.ps1`, upload the zip via
+1. Update MainScene.brs to poll GET /now-playing and show a fullscreen
+   Poster of artUrl instead of the placeholder label (last code piece).
+2. Sideload roku-channel/ (`roku-channel/package.ps1`, upload the zip via
    the web installer) to confirm the repo copy runs on the Roku.
-2. Build the tablet listener (tablet-listener/) — record clip → AudD →
-   POST to the relay.
-3. Update MainScene.brs to poll GET /now-playing and show a fullscreen
-   Poster of artUrl instead of the placeholder label.
+3. On the tablet: install Termux + Termux:API, copy .env.example to .env
+   with the AudD token, run relay.py and listener.py (see each README).
