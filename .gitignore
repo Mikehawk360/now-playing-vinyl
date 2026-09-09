@@ -7,3 +7,8 @@ node_modules/
 
 # Env / secrets (AudD API token, etc.)
 .env
+
+# Relay runtime state
+relay/now_playing.json
+relay/now_playing.json.tmp
+__pycache__/
