@@ -35,7 +35,10 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
       the repo rather than moved; the original sideloaded Hello World
       files were never checked in. package.ps1 builds the sideload zip.
 - [ ] Re-sideload from roku-channel/ to confirm the repo copy runs
-- [ ] Build the relay endpoint
+- [x] Build the relay endpoint (relay/relay.py — stdlib-only Python,
+      GET/POST /now-playing + /health, optional bearer token, JSON
+      mirror file. relay/test_relay.py: 7 unittest cases, passing.)
+- [ ] Deploy the relay on the tablet via Termux (leave it running)
 - [ ] Build the tablet listener (AudD integration)
 - [ ] Update MainScene.brs to poll the relay and display real album art
       instead of the placeholder text
@@ -47,9 +50,18 @@ turntable, shown full-screen on a TV via a sideloaded Roku Express channel.
 - AudD chosen over alternatives for recognition (300 free requests,
   ~$5/1000 after).
 - Windows dev environment: Git Bash + VS Code, `code --wait` set as
-  Git's default editor.
+  Git's default editor. Git Bash has no `zip`/`7z` (hence package.ps1).
+  Python 3.12 installed via winget (Python.Python.3.12) at
+  %LOCALAPPDATA%\Programs\Python\Python312 — not on PATH in Git Bash;
+  invoke by full path or from PowerShell.
+- Relay API contract: POST fields artist/title/album/artUrl/source
+  (strings, empties dropped); server stamps updatedAt (unix seconds).
+  POST {} or {"clear": true} clears. Roku GETs {} when nothing is set.
 
 ## Next step when resuming
-Sideload roku-channel/ (run `roku-channel/package.ps1`, upload the zip
-via the web installer) to confirm the repo copy runs on the Roku, then
-build the relay endpoint.
+1. Sideload roku-channel/ (`roku-channel/package.ps1`, upload the zip via
+   the web installer) to confirm the repo copy runs on the Roku.
+2. Build the tablet listener (tablet-listener/) — record clip → AudD →
+   POST to the relay.
+3. Update MainScene.brs to poll GET /now-playing and show a fullscreen
+   Poster of artUrl instead of the placeholder label.
