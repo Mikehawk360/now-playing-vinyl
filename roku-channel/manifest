@@ -1,12 +1,14 @@
 title=Now Playing Vinyl
 major_version=0
-minor_version=2
-build_version=2
+minor_version=3
+build_version=1
 ui_resolutions=fhd
 
-# --- channel config (read by MainScene.brs via roAppInfo.GetValue) ---
-# Relay endpoint to poll. Point this at the tablet's LAN IP; the Termux
-# relay listens on port 8080. Must be reachable from the Roku.
-relay_url=http://192.168.1.161:8080
-# How often to poll, in seconds.
-poll_interval_seconds=10
+# Bump build_version on every re-sideload of unchanged code - the web
+# installer treats an identical package as a no-op and won't relaunch.
+#
+# relay_url / poll_interval_seconds are NOT read from here - they're
+# hardcoded constants at the top of components/MainScene.brs. (An
+# earlier version tried roAppInfo.GetValue() for custom manifest keys;
+# that's only documented for Roku's well-known keys and silently
+# returned "" here, which is why edits belong in MainScene.brs instead.)

@@ -11,8 +11,10 @@
   <interface>
     <field id="relayUrl" type="string" />
     <field id="pollInterval" type="int" value="10" />
-    <!-- outputs -->
-    <field id="nowPlaying" type="assocarray" />
-    <field id="reachable" type="boolean" value="false" />
+    <!-- outputs. alwaysNotify so a run of repeated failures (or
+         successes) still notifies MainScene each time, not just on the
+         first transition. -->
+    <field id="nowPlaying" type="assocarray" alwaysNotify="true" />
+    <field id="reachable" type="boolean" value="false" alwaysNotify="true" />
   </interface>
 </component>
