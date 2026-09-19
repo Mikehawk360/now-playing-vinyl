@@ -71,10 +71,13 @@ class Config:
     interval: int = 120
     clip_seconds: int = 8
     clip_path: str = ""
-    mic_encoder: str = "aac"
-    mic_bitrate: int = 192
-    mic_sample_rate: int = 44100
-    mic_channels: int = 1
+    # None = don't pass the flag at all, let termux-microphone-record use
+    # its own default. A real AudD match came from a clip recorded with
+    # bare defaults, so these stay opt-in overrides, not forced.
+    mic_encoder: str | None = None
+    mic_bitrate: int | None = None
+    mic_sample_rate: int | None = None
+    mic_channels: int | None = None
     art_size: int = 1000
     clear_after: int = 3
 
@@ -113,9 +116,18 @@ def load_config(env: dict | None = None) -> Config:
     if not clip_path:
         clip_path = str(Path(tempfile.gettempdir()) / "nowplaying_clip.m4a")
 
-    channels = _int("MIC_CHANNELS", 1)
-    if channels not in (1, 2):
-        channels = 1
+    def _opt_int(key: str) -> int | None:
+        raw = merged.get(key, "").strip()
+        if not raw:
+            return None
+        try:
+            return int(raw)
+        except ValueError:
+            return None
+
+    mic_channels = _opt_int("MIC_CHANNELS")
+    if mic_channels not in (1, 2):
+        mic_channels = None
 
     return Config(
         audd_token=token,
@@ -124,10 +136,10 @@ def load_config(env: dict | None = None) -> Config:
         interval=max(15, _int("POLL_INTERVAL", 120)),
         clip_seconds=max(3, _int("CLIP_SECONDS", 8)),
         clip_path=clip_path,
-        mic_encoder=merged.get("MIC_ENCODER", "aac").strip() or "aac",
-        mic_bitrate=max(32, _int("MIC_BITRATE", 256)),
-        mic_sample_rate=max(8000, _int("MIC_SAMPLE_RATE", 44100)),
-        mic_channels=channels,
+        mic_encoder=merged.get("MIC_ENCODER", "").strip() or None,
+        mic_bitrate=_opt_int("MIC_BITRATE"),
+        mic_sample_rate=_opt_int("MIC_SAMPLE_RATE"),
+        mic_channels=mic_channels,
         art_size=max(100, _int("ART_SIZE", 1000)),
         clear_after=max(0, _int("CLEAR_AFTER_MISSES", 3)),
     )
@@ -136,20 +148,27 @@ def load_config(env: dict | None = None) -> Config:
 # ----------------------------------------------------------------- recording
 
 
-def record_clip(path: str, seconds: int, *, encoder: str = "aac",
-                bitrate: int = 256, rate: int = 44100, channels: int = 1) -> None:
+def record_clip(path: str, seconds: int, *, encoder: str | None = None,
+                bitrate: int | None = None, rate: int | None = None,
+                channels: int | None = None) -> None:
     """Record `seconds` of audio to `path` via Termux:API.
 
-    `bitrate` is in kbps (the usual way bitrates get talked about) and is
-    converted to the bits/sec termux-microphone-record's -b actually wants.
+    encoder/bitrate/rate/channels are opt-in overrides - when None (the
+    default), the flag is omitted entirely and termux-microphone-record
+    uses its own default for it. `bitrate` is in kbps when given (the
+    usual way bitrates get talked about); converted to bits/sec for -b.
     """
     Path(path).unlink(missing_ok=True)
-    subprocess.run(
-        ["termux-microphone-record", "-d", "-f", path, "-l", str(seconds),
-         "-e", encoder, "-b", str(bitrate * 1000), "-r", str(rate),
-         "-c", str(channels)],
-        check=True, capture_output=True, timeout=20,
-    )
+    cmd = ["termux-microphone-record", "-d", "-f", path, "-l", str(seconds)]
+    if encoder:
+        cmd += ["-e", encoder]
+    if bitrate:
+        cmd += ["-b", str(bitrate * 1000)]
+    if rate:
+        cmd += ["-r", str(rate)]
+    if channels:
+        cmd += ["-c", str(channels)]
+    subprocess.run(cmd, check=True, capture_output=True, timeout=20)
     time.sleep(seconds + 1)
     # Force-stop in case the limit didn't fire; harmless if already stopped.
     subprocess.run(

@@ -80,6 +80,24 @@ class RecordClipTest(unittest.TestCase):
         self.assertEqual(first_call_args[first_call_args.index("-b") + 1],
                          "256000")  # 256 kbps, not 256 bits/sec
 
+    def test_defaults_omit_quality_flags_entirely(self):
+        """A real AudD match came from a clip recorded with bare
+        termux-microphone-record defaults - so unset overrides must not
+        add -e/-b/-r/-c at all, not just fall back to some other value."""
+        with mock.patch("listener.subprocess.run") as run, \
+             mock.patch("listener.time.sleep"), \
+             mock.patch("listener.Path.unlink"), \
+             mock.patch("listener.Path.exists", return_value=True), \
+             mock.patch("listener.Path.stat") as stat:
+            stat.return_value.st_size = 1234
+            record_clip("/tmp/x.m4a", 8)
+
+        args = run.call_args_list[0].args[0]
+        for flag in ("-e", "-b", "-r", "-c"):
+            self.assertNotIn(flag, args)
+        self.assertEqual(args, ["termux-microphone-record", "-d", "-f",
+                                "/tmp/x.m4a", "-l", "8"])
+
 
 class MultipartTest(unittest.TestCase):
     def test_body_has_boundary_fields_and_file(self):

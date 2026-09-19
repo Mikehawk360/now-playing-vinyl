@@ -59,7 +59,7 @@ Environment variables, optionally seeded from `.env` (gitignored). See
 | `RELAY_URL` | `http://localhost:8080` | relay base URL (same tablet → localhost) |
 | `POLL_INTERVAL` | `120` | seconds between attempts (AudD: 300 free, then ~$5/1000) |
 | `CLIP_SECONDS` | `8` | clip length |
-| `MIC_ENCODER`/`MIC_BITRATE`/`MIC_SAMPLE_RATE`/`MIC_CHANNELS` | `aac`/`192`/`44100`/`1` | recording quality — raise these if clips sound faint/noisy (termux-microphone-record's own defaults are tuned for voice memos, not music across a room) |
+| `MIC_ENCODER`/`MIC_BITRATE`/`MIC_SAMPLE_RATE`/`MIC_CHANNELS` | *(unset — tool's own defaults)* | opt-in overrides only; leave commented out unless you've confirmed a specific value actually helps on your device |
 | `CLEAR_AFTER_MISSES` | `3` | misses before blanking the TV (`0` = never) |
 
 ## Test
