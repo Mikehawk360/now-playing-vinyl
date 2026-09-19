@@ -5,9 +5,10 @@ are stubbed.
 """
 
 import unittest
+from unittest import mock
 
 import listener
-from listener import Config, Listener, extract
+from listener import Config, Listener, extract, record_clip
 
 
 APPLE = {
@@ -59,6 +60,25 @@ class ExtractTest(unittest.TestCase):
         self.assertNotIn("artUrl", rec)
         self.assertNotIn("album", rec)
         self.assertEqual(rec["artist"], "Someone")
+
+
+class RecordClipTest(unittest.TestCase):
+    """termux-microphone-record's -b wants bits/sec; our config is in kbps."""
+
+    def test_bitrate_converted_to_bits_per_second(self):
+        with mock.patch("listener.subprocess.run") as run, \
+             mock.patch("listener.time.sleep"), \
+             mock.patch("listener.Path.unlink"), \
+             mock.patch("listener.Path.exists", return_value=True), \
+             mock.patch("listener.Path.stat") as stat:
+            stat.return_value.st_size = 1234
+            record_clip("/tmp/x.m4a", 8, encoder="aac", bitrate=256,
+                        rate=44100, channels=1)
+
+        first_call_args = run.call_args_list[0].args[0]
+        self.assertIn("-b", first_call_args)
+        self.assertEqual(first_call_args[first_call_args.index("-b") + 1],
+                         "256000")  # 256 kbps, not 256 bits/sec
 
 
 class MultipartTest(unittest.TestCase):

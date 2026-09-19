@@ -125,7 +125,7 @@ def load_config(env: dict | None = None) -> Config:
         clip_seconds=max(3, _int("CLIP_SECONDS", 8)),
         clip_path=clip_path,
         mic_encoder=merged.get("MIC_ENCODER", "aac").strip() or "aac",
-        mic_bitrate=max(32, _int("MIC_BITRATE", 192)),
+        mic_bitrate=max(32, _int("MIC_BITRATE", 256)),
         mic_sample_rate=max(8000, _int("MIC_SAMPLE_RATE", 44100)),
         mic_channels=channels,
         art_size=max(100, _int("ART_SIZE", 1000)),
@@ -137,17 +137,17 @@ def load_config(env: dict | None = None) -> Config:
 
 
 def record_clip(path: str, seconds: int, *, encoder: str = "aac",
-                bitrate: int = 192, rate: int = 44100, channels: int = 1) -> None:
+                bitrate: int = 256, rate: int = 44100, channels: int = 1) -> None:
     """Record `seconds` of audio to `path` via Termux:API.
 
-    termux-microphone-record's own defaults are tuned for voice memos and
-    can come out faint/noisy on a cheap tablet mic pointed at a speaker
-    across a room; bumping the bitrate/rate helps.
+    `bitrate` is in kbps (the usual way bitrates get talked about) and is
+    converted to the bits/sec termux-microphone-record's -b actually wants.
     """
     Path(path).unlink(missing_ok=True)
     subprocess.run(
         ["termux-microphone-record", "-d", "-f", path, "-l", str(seconds),
-         "-e", encoder, "-b", str(bitrate), "-r", str(rate), "-c", str(channels)],
+         "-e", encoder, "-b", str(bitrate * 1000), "-r", str(rate),
+         "-c", str(channels)],
         check=True, capture_output=True, timeout=20,
     )
     time.sleep(seconds + 1)
