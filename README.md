@@ -74,23 +74,34 @@ by the server. POST is optionally protected by a bearer token
 ### On the tablet (Termux)
 
 ```bash
-pkg install python termux-api        # also install the Termux:API app from F-Droid
+pkg install python termux-api git    # also install the Termux:API app from F-Droid
 git clone https://github.com/Mikehawk360/now-playing-vinyl
 cd now-playing-vinyl
 
-# relay
-python3 relay/relay.py &
-
-# listener
 cp tablet-listener/.env.example tablet-listener/.env
 $EDITOR tablet-listener/.env         # add your AUDD_TOKEN
-python3 tablet-listener/listener.py
 ```
 
 Grant the Termux:API app microphone permission, and keep the tablet
-plugged in (wired only — it has no wireless charging). See
-[tablet-listener/README.md](tablet-listener/README.md) for config and
-running it as a service.
+plugged in (wired only — it has no wireless charging).
+
+Each time you're about to play records:
+
+```bash
+bash start.sh   # starts the relay + listener, takes a wake lock
+```
+
+and when you're done:
+
+```bash
+bash stop.sh    # stops both, releases the wake lock
+```
+
+Running only during a listening session (rather than 24/7) matters
+because AudD's free tier is 300 requests total — `start.sh`/`stop.sh`
+make that a two-command habit instead of leaving it running always. See
+[tablet-listener/README.md](tablet-listener/README.md) for config
+details and logs.
 
 ### On the Roku
 

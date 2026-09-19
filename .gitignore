@@ -12,3 +12,6 @@ node_modules/
 relay/now_playing.json
 relay/now_playing.json.tmp
 __pycache__/
+
+# start.sh / stop.sh pidfiles
+.run/
