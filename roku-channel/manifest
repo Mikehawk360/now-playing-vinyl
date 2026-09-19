@@ -7,6 +7,6 @@ ui_resolutions=fhd
 # --- channel config (read by MainScene.brs via roAppInfo.GetValue) ---
 # Relay endpoint to poll. Point this at the tablet's LAN IP; the Termux
 # relay listens on port 8080. Must be reachable from the Roku.
-relay_url=http://192.168.1.100:8080
+relay_url=http://192.168.1.161:8080
 # How often to poll, in seconds.
 poll_interval_seconds=10
