@@ -78,7 +78,7 @@ class LoopTest(unittest.TestCase):
         self.posted = []
         self.audio_written = []
 
-        def fake_recorder(path, seconds):
+        def fake_recorder(path, seconds, **kw):
             self.audio_written.append((path, seconds))
 
         def fake_poster(record, url, token="", **kw):

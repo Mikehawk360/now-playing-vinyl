@@ -25,6 +25,13 @@ to this script (KEY=value lines). See .env.example.
   POLL_INTERVAL    seconds between recognition attempts (default 120)
   CLIP_SECONDS     clip length to record (default 8)
   CLIP_PATH        where to write the clip (default: temp dir)
+  MIC_ENCODER      termux-microphone-record encoder: aac, amr_wb, aac_eld,
+                   opus (default aac)
+  MIC_BITRATE      encoder bitrate in kbps (default 192 - termux-api's own
+                   default is lower and can sound thin/noisy on quiet mics)
+  MIC_SAMPLE_RATE  sample rate in Hz (default 44100)
+  MIC_CHANNELS     1 (mono) or 2 (stereo) (default 1 - plenty for
+                   recognition, smaller upload)
   ART_SIZE         px for Apple Music artwork template (default 1000)
   CLEAR_AFTER_MISSES  consecutive no-matches before clearing the relay
                       (default 3; 0 = never clear)
@@ -64,6 +71,10 @@ class Config:
     interval: int = 120
     clip_seconds: int = 8
     clip_path: str = ""
+    mic_encoder: str = "aac"
+    mic_bitrate: int = 192
+    mic_sample_rate: int = 44100
+    mic_channels: int = 1
     art_size: int = 1000
     clear_after: int = 3
 
@@ -102,6 +113,10 @@ def load_config(env: dict | None = None) -> Config:
     if not clip_path:
         clip_path = str(Path(tempfile.gettempdir()) / "nowplaying_clip.m4a")
 
+    channels = _int("MIC_CHANNELS", 1)
+    if channels not in (1, 2):
+        channels = 1
+
     return Config(
         audd_token=token,
         relay_url=merged.get("RELAY_URL", "http://localhost:8080").strip(),
@@ -109,6 +124,10 @@ def load_config(env: dict | None = None) -> Config:
         interval=max(15, _int("POLL_INTERVAL", 120)),
         clip_seconds=max(3, _int("CLIP_SECONDS", 8)),
         clip_path=clip_path,
+        mic_encoder=merged.get("MIC_ENCODER", "aac").strip() or "aac",
+        mic_bitrate=max(32, _int("MIC_BITRATE", 192)),
+        mic_sample_rate=max(8000, _int("MIC_SAMPLE_RATE", 44100)),
+        mic_channels=channels,
         art_size=max(100, _int("ART_SIZE", 1000)),
         clear_after=max(0, _int("CLEAR_AFTER_MISSES", 3)),
     )
@@ -117,11 +136,18 @@ def load_config(env: dict | None = None) -> Config:
 # ----------------------------------------------------------------- recording
 
 
-def record_clip(path: str, seconds: int) -> None:
-    """Record `seconds` of audio to `path` via Termux:API."""
+def record_clip(path: str, seconds: int, *, encoder: str = "aac",
+                bitrate: int = 192, rate: int = 44100, channels: int = 1) -> None:
+    """Record `seconds` of audio to `path` via Termux:API.
+
+    termux-microphone-record's own defaults are tuned for voice memos and
+    can come out faint/noisy on a cheap tablet mic pointed at a speaker
+    across a room; bumping the bitrate/rate helps.
+    """
     Path(path).unlink(missing_ok=True)
     subprocess.run(
-        ["termux-microphone-record", "-d", "-f", path, "-l", str(seconds)],
+        ["termux-microphone-record", "-d", "-f", path, "-l", str(seconds),
+         "-e", encoder, "-b", str(bitrate), "-r", str(rate), "-c", str(channels)],
         check=True, capture_output=True, timeout=20,
     )
     time.sleep(seconds + 1)
@@ -247,7 +273,11 @@ class Listener:
         self.poster(record, self.cfg.relay_url, self.cfg.relay_token)
 
     def run_once(self) -> dict | None:
-        self.recorder(self.cfg.clip_path, self.cfg.clip_seconds)
+        self.recorder(
+            self.cfg.clip_path, self.cfg.clip_seconds,
+            encoder=self.cfg.mic_encoder, bitrate=self.cfg.mic_bitrate,
+            rate=self.cfg.mic_sample_rate, channels=self.cfg.mic_channels,
+        )
         audio = Path(self.cfg.clip_path).read_bytes()
         result = self.recognizer(audio, self.cfg.audd_token)
 
