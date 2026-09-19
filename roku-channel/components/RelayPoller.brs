@@ -27,7 +27,7 @@ sub fetchOnce()
 
     xfer = CreateObject("roUrlTransfer")
     xfer.setUrl(url + "/now-playing")
-    xfer.setRequestType("GET")
+    ' GET is the default for asyncGetToString(); no need to set it.
     xfer.enableEncodings(true)
     ' Needed only for https relays; harmless for http.
     xfer.setCertificatesFile("common:/certs/ca-bundle.crt")
